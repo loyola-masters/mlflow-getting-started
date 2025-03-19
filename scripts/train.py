@@ -9,7 +9,6 @@ import mlflow.pytorch
 from model import build_model, device
 from dataset import build_dataloaders
 
-
 tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "")
 mlflow.set_tracking_uri(tracking_uri)
 
@@ -54,6 +53,7 @@ def test(dataloader, model, loss_fn):
 
 
 def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
+    print(f"Entrenando con {epochs} epochs, LR={learning_rate}, Batch size={batch_size}")
     train_dataloader, test_dataloader = build_dataloaders(batch_size)
     model, signature = build_model()
 
@@ -81,12 +81,21 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
                 mlflow.pytorch.log_model(model.cpu(), "model", signature=signature, code_paths=["scripts/model.py"])
                 model.to(device)
 
+        # Save model to file
+        model_path = "model.pth"
+        torch.save(model.state_dict(), model_path)
+        print(f"Modelo guardado en {model_path}")
+
     print("Done!")
 
 
-if __name__ == "__main__":
-    epochs = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-    learning_rate = float(sys.argv[2]) if len(sys.argv) > 2 else 1e-2
-    batch_size = int(sys.argv[3]) if len(sys.argv) > 3 else 64
+import argparse
 
-    run_training(epochs, learning_rate, batch_size)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Entrenamiento de modelo con PyTorch y MLFlow")
+    parser.add_argument("--epochs", type=int, default=3, help="Número de épocas de entrenamiento")
+    parser.add_argument("--learning_rate", type=float, default=0.01, help="Tasa de aprendizaje")
+    parser.add_argument("--batch_size", type=int, default=64, help="Tamaño del batch")
+
+    args = parser.parse_args()
+    run_training(args.epochs, args.learning_rate, args.batch_size)
