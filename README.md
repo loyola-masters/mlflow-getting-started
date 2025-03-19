@@ -1,5 +1,9 @@
 # Tutorial de MLFlow
-
+```
+Modelo de ejemplo:
+MNIST dataset entrenado con Pytorch
+(inicialmente 2 capas densas de 256 by 128 neuronas respectivamente)
+```
 Este repositorio contiene un paso a paso que aborda las principales características de MLFlow y se basa en un [tutorial](https://mlflow.org/docs/latest/tutorials-and-examples/tutorial.html) de la documentación oficial de la herramienta.
 
 ___
