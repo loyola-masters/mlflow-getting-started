@@ -1,42 +1,43 @@
-# MLFlow Tutorial
+# Tutorial de MLFlow
 
-Este repositório contém um passo a passo que aborda os principais recursos do MLFlow e foi baseado em um [tutorial](https://mlflow.org/docs/latest/tutorials-and-examples/tutorial.html) da documentação oficial da ferramenta.
+Este repositorio contiene un paso a paso que aborda las principales características de MLFlow y se basa en un [tutorial](https://mlflow.org/docs/latest/tutorials-and-examples/tutorial.html) de la documentación oficial de la herramienta.
+
 ___
-## Passo a passo
+## Paso a paso
 
-### Materiais
+### Materiales
 
-A pasta `scripts` é composta por alguns scripts que nos auxiliarão na realização do tutorial. Abaixo temos uma descrição de cada um deles:
+La carpeta `scripts` contiene algunos scripts que nos ayudarán a realizar el tutorial. A continuación, se describe cada uno de ellos:
 
-* [dataset.py](scripts/dataset.py): Contém a função que carrega os dataloaders que servirão para treinar e testar o modelo.
-* [model.py](scripts/model.py): Contém a função que cria o modelo.
-* [train.py](scripts/train.py): Script principal com a função de treino do modelo. É dentro deste script que logamos as métricas e os parâmetros com o MLFlow tracking.
-* [predict.py](scripts/predict.py): Script que carrega e faz inferência usando o modelo treinado.
-* [request.py](scripts/request.py): Script que faz uma requisição para a API que está servindo o modelo.
+* [dataset.py](scripts/dataset.py): Contiene la función que carga los dataloaders que se utilizarán para entrenar y probar el modelo.
+* [model.py](scripts/model.py): Contiene la función que crea el modelo.
+* [train.py](scripts/train.py): Script principal con la función de entrenamiento del modelo. Dentro de este script registramos las métricas y los parámetros con MLFlow tracking.
+* [predict.py](scripts/predict.py): Script que carga y realiza inferencias con el modelo entrenado.
+* [request.py](scripts/request.py): Script que realiza una solicitud a la API que está sirviendo el modelo.
 
-Antes de seguir com o tutorial lembre-se de instalar os pacotes necessários:
-    
+Antes de continuar con el tutorial, asegúrate de instalar los paquetes necesarios:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 1. MLFlow Tracking
 
-O MLFlow tracking é um componente que permite ao usuário criar e gerenciar experimentos. Fornece uma API e uma interface de usuário que nos permite salvar e visualizar métricas, parâmetros, modelos e artefatos.
+MLFlow tracking es un componente que permite al usuario crear y gestionar experimentos. Proporciona una API y una interfaz de usuario que permite guardar y visualizar métricas, parámetros, modelos y artefactos.
 
-Os resultados dos experimentos realizados com MLFlow são armazenados localmente ou em um servidor remoto. Por padrão, os resultados são armazenados localmente em arquivos dentro do diretório `mlruns`.
+Los resultados de los experimentos realizados con MLFlow se almacenan localmente o en un servidor remoto. Por defecto, los resultados se almacenan localmente en archivos dentro del directorio `mlruns`.
 
-Para mais informações, consulte a [documentação](https://mlflow.org/docs/latest/tracking.html).
+Para más información, consulta la [documentación](https://mlflow.org/docs/latest/tracking.html).
 
-#### 1.1. Treinando um modelo
+#### 1.1. Entrenando un modelo
 
-Primeiramente vamos começar treinando uma simples rede neural com o pytorch, para isso basta rodar o script train.py:
+Primero, entrenaremos una red neuronal simple con PyTorch. Para ello, ejecuta el siguiente comando:
 
 ```bash
 $ python scripts/train.py <epochs> <learning_rate> <batch_size>
 ```
 
-Dentro do train.py você encontrará o seguinte trecho de código:
+Dentro de `train.py` encontrarás el siguiente fragmento de código:
 
 ```python
 with mlflow.start_run():
@@ -58,40 +59,39 @@ with mlflow.start_run():
             mlflow.pytorch.log_model(model, "model", signature=signature)
 ```
 
-Neste trecho de código você pode observar que os parâmetros são logados com o método `log_param`, as métricas são logadas com o método `log_metric` e o modelo é salvo com o método `log_model`. Além destes, temos outros métodos muito úteis que podem ser utilizados por exemplo, `log_artifact` para salvar arquivos no diretório `artifacts` e `log_image` para salvar imagens. Para mais informações, consulte a [documentação](https://mlflow.org/docs/latest/python_api/mlflow.tracking.html).
+En este fragmento de código, puedes observar que los parámetros se registran con el método `log_param`, las métricas con `log_metric` y el modelo se guarda con `log_model`. Además de estos, existen otros métodos útiles, como `log_artifact` para guardar archivos en el directorio `artifacts` y `log_image` para guardar imágenes. Para más información, consulta la [documentación](https://mlflow.org/docs/latest/python_api/mlflow.tracking.html).
 
+#### 1.2. Visualizando los resultados
 
-#### 1.2. Visualizando os resultados
-
-Após o treino, o script irá criar uma pasta chamada `mlruns` no diretório atual. Dentro desta pasta serão armazenados os arquivos de log do experimento. O MLFlow disponibiliza uma interface de usuário que nos permite visualizar os resultados do experimento. Para isso, basta abrir o terminal e digitar:
+Después del entrenamiento, el script creará una carpeta llamada `mlruns` en el directorio actual. Dentro de esta carpeta se almacenarán los archivos de registro del experimento. MLFlow proporciona una interfaz de usuario para visualizar los resultados del experimento. Para acceder a ella, abre el terminal y ejecuta:
 
 ```bash
 $ mlflow ui
 ```
 
-Agora em um navegador podemos acessar a interface de usuário do MLFlow no endereço [http://127.0.0.1:5000](http://127.0.0.1:5000).
+Ahora, en un navegador, puedes acceder a la interfaz de usuario de MLFlow en la dirección [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
-Você verá uma tabela com os resultados do experimento similar a esta:
+Verás una tabla con los resultados del experimento similar a esta:
 
 ![image](./assets/session-1.ui-1.png)
 
-Selecionando o experimento desejado você terá acesso aos gráficos e artefatos gerados durante o treinamento do modelo.
+Al seleccionar el experimento deseado, tendrás acceso a los gráficos y artefactos generados durante el entrenamiento del modelo.
 
 ### 2. MLFlow Projects
 
-Agora que nós temos nosso código de treino, podemos criar um projeto em um formato que seja reproduzível em qualquer plataforma usando o MLFlow Projects. Esse tipo de projeto é útil caso você queira treinar um modelo em cloud por exemplo, no databricks.
+Ahora que tenemos nuestro código de entrenamiento, podemos crear un proyecto en un formato que sea reproducible en cualquier plataforma usando MLFlow Projects. Este tipo de proyecto es útil si deseas entrenar un modelo en la nube, por ejemplo, en Databricks.
 
-#### 2.1. Preparando o MLproject
+#### 2.1. Preparando el MLproject
 
-Para criarmos um novo projeto devemos adicionar um arquivo chamado `MLproject` que deverá conter as especificações do projeto.
+Para crear un nuevo proyecto, debemos agregar un archivo llamado `MLproject`, que contendrá las especificaciones del proyecto.
 
 ```python
 name: Tutorial Project
 
-# Caso queira usar o conda:
+# Si deseas usar conda:
 # conda_env: conda.yaml
 
-# No nosso caso usaremos um python env
+# En este caso, usaremos un entorno de Python
 python_env: python_env.yaml
 
 entry_points:
@@ -103,84 +103,72 @@ entry_points:
     command: "python scripts/train.py {epochs} {learning_rate} {batch_size}"
 ```
 
-Para mais informações sobre as especificações do arquivo `MLproject` veja [aqui](https://mlflow.org/docs/latest/projects.html).
+Para más información sobre las especificaciones del archivo `MLproject`, consulta [aquí](https://mlflow.org/docs/latest/projects.html).
 
-#### 2.2. Rodando nosso projeto
+#### 2.2. Ejecutando nuestro proyecto
 
+Podemos ejecutar nuestro proyecto en el entorno local o dejar que MLFlow prepare un entorno para nuestro proyecto usando `pyenv`. Si deseas usar `pyenv`, consulta [esta guía](https://dev.to/womakerscode/instalando-o-python-com-o-pyenv-2dc7) para instalarlo.
 
-Podemos rodar com o nosso projeto no env local ou deixar o mlflow preparar um env para o nosso projeto usando o `pyenv`. Caso queria usar o `pyenv` veja [esse passo a passo](https://dev.to/womakerscode/instalando-o-python-com-o-pyenv-2dc7) de como instala-lo.
-
-Para rodar o projeto com o pyenv, basta executar o comando:
+Para ejecutar el proyecto con `pyenv`, usa:
 
 ```bash
 $ mlflow run git@github.com:esgario/mlflow-tutorial.git -P epochs=5 -P learning_rate=0.01 -P batch_size=64
 ```
-Ou com o env local:
+
+O con el entorno local:
+
 ```bash
 $  mlflow run git@github.com:esgario/mlflow-tutorial.git --env-manager=local
 ```
->Note que os parâmetros são opcionais, para passar os parâmetros basta colocar o argumento `-P` seguido do nome do parâmetro e o valor desejado.
 
+> Nota: Los parámetros son opcionales. Para pasarlos, usa el argumento `-P` seguido del nombre del parámetro y el valor deseado.
 
-### 3. MLFlow Models e Model Registry
+### 3. MLFlow Models y Model Registry
 
-O **MLFlow Models** consiste em um formato padrão para empacotamento de modelos de aprendizado de máquina. O formato define uma convenção que permite salvar modelos de diferentes frameworks que podem eventualmente serem servidos ou deployados. Mais informações [aqui](https://mlflow.org/docs/latest/models.html).
+**MLFlow Models** es un formato estándar para empaquetar modelos de aprendizaje automático. Este formato define una convención que permite guardar modelos de diferentes frameworks para su posterior uso o despliegue. Más información [aquí](https://mlflow.org/docs/latest/models.html).
 
-O **Model Registry** introduz alguns conceitos que facilitam a gestão do ciclo de vida de um modelo de machine learning com o MLFlow. Basicamente os modelos logados recebem um nome, uma versão e uma tag que indica o estágio atual do modelo por exemplo, `Staging`, `Production` ou `Archived`. Além disso, o model registry fornece uma forma de mantermos o tracking da linhagem do modelo, ou seja, mantém um registro de qual experimento gerou determinado modelo.
+El **Model Registry** facilita la gestión del ciclo de vida de un modelo de machine learning en MLFlow. Los modelos registrados reciben un nombre, una versión y una etiqueta que indica su estado, por ejemplo, `Staging`, `Production` o `Archived`. Además, el Model Registry mantiene un historial de qué experimento generó cada modelo.
 
-Neste exemplo nós mostramos como registrar um modelo e carrega-lo para predição usando o MLFlow Models e o Model Registry. 
+En este ejemplo, mostramos cómo registrar un modelo y cargarlo para inferencia usando MLFlow Models y Model Registry.
 
->**Importante**: Devemos nos atentar que a utilização do Model Registry requer que o armazenamento seja feito em um banco de dados. Portanto, utilizaremos o SQLite durante a execução deste tutorial.
+> **Importante**: El uso del Model Registry requiere almacenamiento en una base de datos. En este tutorial, utilizaremos SQLite.
 
-#### 3.1. Treinando um modelo e logando os resultados no SQLite.
+#### 3.1. Entrenando un modelo y registrando los resultados en SQLite.
 
-Para treinar o modelo utilizaremos o mesmo script de antes. Com a diferença de que agora nós exportaremos uma variável de ambiente com a URI que apontará para o nosso banco de dados. Para isso rode os seguintes comandos:
+Ejecuta los siguientes comandos para entrenar el modelo y almacenar los registros en SQLite:
 
 ```bash
 $ export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 $ python scripts/train.py <epochs> <learning_rate> <batch_size>
 ```
 
-ou então basta rodar o `run.sh` disponível na pasta `scripts`:
+O simplemente ejecuta:
 
 ```bash
 $ bash scripts/run.sh
 ```
 
-Para visualizar o resultado devemos iniciar a interface do MLFlow, neste caso também devemos passar a URI do nosso banco.
+Para visualizar los resultados, inicia la interfaz de MLFlow con:
 
 ```bash
 $ mlflow ui --backend-store-uri sqlite:///mlflow.db --serve-artifacts
 ```
 
-ou
+O usa:
 
 ```bash
 $ bash scripts/ui.sh
 ```
 
-obs: use `mlflow ui` para ambiente de desenvolvimento e `mlflow serve` para ambiente de produção.
+#### 3.2. Registrando el modelo
 
-
-#### 3.2. Registrando modelo
-
-Após o modelo ter sido logado, nós podemos criar um registro do modelo no Model Registry. Esse registro pode ser feito programaticamente ou via interface de usuário. Neste exemplo, vamos utilizar a interface de usuário.
-
-Primeiro, acesse a interface do MLFlow e selecione o experimento que deseja registrar o modelo. Em seguida, clique em `Register Model` e selecione o modelo que deseja registrar. Veja a imagem abaixo:
+Desde la interfaz de MLFlow, selecciona el experimento y haz clic en `Register Model` para registrar el modelo.
 
 ![image](./assets/session-2.ui-1.png)
 
-Uma nova janela aparecerá. Digite o nome do modelo que deseja registrar e clique em `Register`. Neste caso o nome do modelo será `pytorch_simplenn_mnist`.
+#### 3.3. Cargando el modelo
 
-![image](./assets/session-2.ui-2.png)
-
-Pronto, o modelo está registrado.
-
->Caso tenha dúvidas sobre como realizar esse procedimento acesse [este link](https://mlflow.org/docs/latest/model-registry.html#ui-workflow) para ver um exemplo mais detalhado de como registrar um modelo via interface de usuário.
-
-#### 3.3. Carregando modelo
-
-Para carregar o modelo precisamos do nome e da versão do modelo registrado. Com esses dados em mãos basta chamar o método `load_model` que do framework desejado que o MLFlow buscará automaticamente seu modelo no Model Registry. Por exemplo:
+Para cargar el modelo registrado:
 
 ```python
 import torch
@@ -194,96 +182,87 @@ model = mlflow.pytorch.load_model(
 )
 ```
 
-Rode o script `predict.py` para testar o carregamento do modelo.
+Ejecuta:
 
 ```bash
 $ export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 $ python scripts/predict.py
 ```
 
-Se tudo correr bem você verá o resultado de inferência do modelo.
-
->**Importante**: Existem diferentes formas de se passar a URI do modelo, por exemplo, você pode passar uma URI do S3 ou então o caminho completo da pasta do modelo. Para mais exemplos de URI veja [este link](https://mlflow.org/docs/latest/python_api/mlflow.pytorch.html#mlflow.pytorch.load_model).
-
-#### 3.4. Servindo modelo
-
-Por fim podemos servir diretamente um modelo do Model Registry da seguinte forma:
+#### 3.4. Sirviendo el modelo
 
 ```bash
-$ export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
 $ mlflow models serve -m "models:/pytorch_simplenn_mnist/1" --env-manager=local --enable-mlserver --port 6000
 ```
 
-ou apenas
+O:
 
 ```bash
 $ bash scripts/serving.sh
 ```
 
-Para fazer uma requisição para o modelo basta rodar o script `request.py`:
+Para hacer una solicitud al modelo, simplemente ejecuta el script `request.py`:
 
 ```bash
 $ python scripts/request.py
 ```
 
-#### 3.5. Fazendo deploy local do modelo
+#### 3.5. Desplegando el modelo localmente
 
-[**Importante**] Os comandos a seguir pressupõem que você já tenha instalado o Minikube, o Istioctl e o Kubectl na sua máquina.
+[**Importante**] Los siguientes comandos suponen que ya tienes instalado **Minikube, Istioctl y Kubectl** en tu máquina.
 
 ```bash
 # Iniciando Minikube
 $ minikube start
 
-# Instalando o istioctl
+# Instalando Istioctl
 $ istioctl install --set profile=demo -y
 
-# Habilita istio injection
+# Habilitar Istio Injection
 $ kubectl label namespace default istio-injection=enabled
 
-# Aplicando o istio gateway que fará o roteamento das requições para os  modelos.
+# Aplicando el Istio Gateway que gestionará el enrutamiento de las solicitudes a los modelos.
 $ kubectl apply -f infra/gateway.yaml
 
-# Cria um namespace para o seldon-system
+# Crear un namespace para el seldon-system
 $ kubectl create namespace seldon-system
 
-# Instala o seldon-core-operator
+# Instalar el seldon-core-operator
 $ helm install seldon-core seldon-core-operator \
  --repo https://storage.googleapis.com/seldon-charts \
  --set usageMetrics.enabled=true \
  --set istio.enabled=true \
  --namespace seldon-system
 
-# Checa se o seldon controller está rodando
+# Verificar si el controlador de Seldon está en ejecución
 $ kubectl get pods -n seldon-system
 
-# Configura o docker para apontar pro minikube
+# Configurar Docker para que apunte a Minikube
 $ eval $(minikube docker-env)
 
-# Buildando nossa imagem docker com o mlflow
+# Construir la imagen Docker con MLFlow
 $ bash scripts/build-docker.sh
 
-# Fazendo deploy do nosso modelo no minikube
+# Desplegar nuestro modelo en Minikube
 $ kubectl apply -f infra/deployment.yaml
 ```
 
-##### Testando o modelo
+##### Probando el modelo
 
-Em outro terminal crie um tunnel com o minikube para que o load balancer funcione:
-  
+En otro terminal, crea un túnel con Minikube para que el balanceador de carga funcione:
+
 ```bash
 $ minikube tunnel
 ```
 
-Por fim precisamos fazer um port-foward para o ingress na porta 8080.
-  
+Por último, necesitamos hacer un **port-forward** para el **ingress** en el puerto 8080:
+
 ```bash
 $ kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 ```
 
-Pronto! agora já podemos fazer inferência no nosso modelo. Para isso basta rodar o script `request.py` da seguinte forma:
+¡Listo! Ahora ya podemos hacer inferencias con nuestro modelo. Para ello, ejecuta el script `request.py` de la siguiente manera:
 
 ```bash
 $ python scripts/request.py kubernetes
 ```
-
----
