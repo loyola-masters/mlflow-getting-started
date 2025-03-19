@@ -18,6 +18,14 @@ La carpeta `scripts` contiene algunos scripts que nos ayudarán a realizar el tu
 Antes de continuar con el tutorial, asegúrate de instalar los paquetes necesarios:
 
 ```bash
+conda create -f python_env.yaml -n mlflow
+```
+`requirements.txt` is called from `python_env.yaml`
+
+Or manually:
+```bash
+conda create -n mlflow python=3.9
+conda activate mlflow
 pip install -r requirements.txt
 ```
 
@@ -32,9 +40,16 @@ Para más información, consulta la [documentación](https://mlflow.org/docs/lat
 #### 1.1. Entrenando un modelo
 
 Primero, entrenaremos una red neuronal simple con PyTorch. Para ello, ejecuta el siguiente comando:
-
 ```bash
 $ python scripts/train.py <epochs> <learning_rate> <batch_size>
+```
+Como ejemplo:
+```
+# batch_size = 64
+# learning_rate = 0.01
+# epochs = 25
+
+python scripts/train.py --epochs 25 --learning_rate 0.01 --batch_size 64
 ```
 
 Dentro de `train.py` encontrarás el siguiente fragmento de código:
@@ -63,7 +78,8 @@ En este fragmento de código, puedes observar que los parámetros se registran c
 
 #### 1.2. Visualizando los resultados
 
-Después del entrenamiento, el script creará una carpeta llamada `mlruns` en el directorio actual. Dentro de esta carpeta se almacenarán los archivos de registro del experimento. MLFlow proporciona una interfaz de usuario para visualizar los resultados del experimento. Para acceder a ella, abre el terminal y ejecuta:
+Después del entrenamiento, el script creará una carpeta llamada `mlruns` en el directorio actual. Dentro de esta carpeta se almacenarán los archivos de registro del experimento. MLFlow proporciona una interfaz de usuario para vis
+ualizar los resultados del experimento. Para acceder a ella, abre el terminal y ejecuta:
 
 ```bash
 $ mlflow ui
@@ -265,4 +281,19 @@ $ kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 
 ```bash
 $ python scripts/request.py kubernetes
+```
+
+# ANEXO: Instalación de Pytorch con soporte para GPU
+
+Fichero `requirements.txt`:
+```
+pip==22.1.2
+setuptools==62.6.0
+wheel==0.37.1
+mlflow[extras]
+cloudpickle==2.1.0
+```
+Instala Pytorch con soporte para CUDA manualmente:
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 ```
