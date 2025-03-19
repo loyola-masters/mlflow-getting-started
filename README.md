@@ -287,7 +287,7 @@ $ kubectl port-forward -n istio-system svc/istio-ingressgateway 8080:80
 $ python scripts/request.py kubernetes
 ```
 
-# ANEXO: Instalación de Pytorch con soporte para GPU
+# ANEXO 1: Instalación de Pytorch con soporte para GPU
 
 Fichero `requirements.txt`:
 ```
@@ -301,3 +301,94 @@ Instala Pytorch con soporte para CUDA manualmente:
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 ```
+
+# ANEXO 2: Almacenamiento de modelos en MLflow
+MLflow guarda los modelos entrenados en **artifacts**, que pueden estar en un almacenamiento **local** o en una ubicación **remota** dependiendo de la configuración del **Tracking URI**.
+
+---
+
+### **📌 Ubicación donde MLflow guarda el modelo**
+#### 🔹 **Por defecto (Local)**
+Si **no has configurado un servidor remoto**, MLflow guarda los modelos en la carpeta `mlruns` dentro del directorio donde ejecutaste el script.  
+
+- **Ruta estándar en local**:
+  ```
+  ./mlruns/{experiment_id}/{run_id}/artifacts/model/
+  ```
+  Donde:
+  - **`experiment_id`**: ID del experimento en MLflow.
+  - **`run_id`**: ID único de la ejecución.
+  - **`artifacts/model/`**: Carpeta donde se almacena el modelo.
+
+- Puedes verificarlo ejecutando:
+  ```bash
+  ls mlruns/0/<run_id>/artifacts/model/
+  ```
+
+#### 🔹 **Si usas una base de datos o almacenamiento remoto**
+Si has configurado un **servidor remoto (MLflow Tracking Server)** y has cambiado el `MLFLOW_TRACKING_URI`, el modelo se guarda en la ubicación configurada, como:
+- **S3 (Amazon Web Services)**
+- **Azure Blob Storage**
+- **Google Cloud Storage**
+- **Base de datos SQLite, MySQL, PostgreSQL**
+- **Carpeta personalizada en otro servidor**
+
+Puedes ver la ubicación configurada ejecutando:
+```python
+import mlflow
+print(mlflow.get_tracking_uri())  # Muestra la ubicación de almacenamiento
+```
+
+---
+
+### **🔥 Cómo verificar dónde se ha guardado un modelo**
+Si ya has registrado un modelo en MLflow, puedes recuperar su ruta con:
+
+```python
+import mlflow
+
+# Obtener la última ejecución registrada
+last_run = mlflow.search_runs(order_by=["start_time desc"]).iloc[0]
+
+# Obtener la ruta del modelo
+model_uri = f"mlruns/{last_run.experiment_id}/{last_run.run_id}/artifacts/model"
+print(f"El modelo se encuentra en: {model_uri}")
+```
+
+Si usas un **MLflow Tracking Server remoto**, puedes obtener la URI del modelo con:
+```python
+import mlflow
+logged_model = "runs:/<run_id>/model"
+print(mlflow.artifacts.download_artifacts(logged_model))
+```
+
+---
+
+### **📌 Cómo cargar un modelo guardado por MLflow**
+#### 🔹 **Desde almacenamiento local**
+Si el modelo está en `mlruns/`, puedes cargarlo con:
+```python
+import mlflow.pytorch
+
+model = mlflow.pytorch.load_model("mlruns/0/<run_id>/artifacts/model")
+```
+
+#### 🔹 **Desde MLflow Server**
+Si el modelo está en un servidor remoto o en la nube:
+```python
+model = mlflow.pytorch.load_model("runs:/<run_id>/model")
+```
+
+#### 🔹 **Desde Model Registry**
+Si has registrado el modelo en el **Model Registry**, puedes cargarlo directamente con:
+```python
+model = mlflow.pytorch.load_model("models:/my_model/latest")
+```
+Donde `"my_model/latest"` es el nombre del modelo en el **Model Registry**.
+
+---
+
+### **📌 Resumen**
+✔ **Por defecto, MLflow guarda los modelos en `./mlruns/{experiment_id}/{run_id}/artifacts/model/`.**  
+✔ **Si usas un servidor remoto, el modelo se almacena en la ubicación configurada (`S3, GCS, Azure, MySQL, etc.`).**  
+✔ **Puedes recuperar la ruta con `mlflow.get_tracking_uri()` y cargar el modelo con `mlflow.pytorch.load_model()`.**
