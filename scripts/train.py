@@ -5,6 +5,7 @@ from torch import nn
 
 import mlflow
 import mlflow.pytorch
+from datetime import datetime
 
 from model import build_model, device
 from dataset import build_dataloaders
@@ -56,13 +57,24 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
     print(f"Entrenando con {epochs} epochs, LR={learning_rate}, Batch size={batch_size}")
     train_dataloader, test_dataloader = build_dataloaders(batch_size)
     model, signature = build_model()
+    
+    # Print signature
+    print("Signature:", signature)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
     best_acc = 0.0
 
-    with mlflow.start_run():
+    # Generate experiment run with timestamp
+    experiment_name = "MNIST_experiment"
+    mlflow.set_experiment(experiment_name)
+    
+    # Generate run name with timestamp
+    run_name = f"run_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    
+    with mlflow.start_run(run_name=run_name):
+        mlflow.log_param("device", device)
         mlflow.log_param("epochs", epochs)
         mlflow.log_param("learning_rate", learning_rate)
         mlflow.log_param("batch_size", batch_size)
@@ -87,7 +99,6 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
         print(f"Modelo guardado en {model_path}")
 
     print("Done!")
-
 
 import argparse
 

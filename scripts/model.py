@@ -30,6 +30,18 @@ def build_model(input_shape=(28, 28)):
     print(model, "\n")
 
     # get model signature
+    # What is the model signature?
+    # The model signature is a description of the model's inputs and outputs.
+    # It is used to describe the model's interface to the outside world.
+    # The signature is a dictionary with two keys: 'inputs' and 'outputs'
+    '''
+    inputs: 
+        [Tensor('float32', (-1, 28, 28))]
+    outputs:
+        [Tensor('float32', (-1, 10))]
+    params:
+        None
+    '''
     x = torch.randn(2, *input_shape)
     y = model(x.to(device)).cpu()
     signature = infer_signature(x.numpy(), y.detach().numpy())

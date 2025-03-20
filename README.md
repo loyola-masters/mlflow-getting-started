@@ -22,12 +22,6 @@ La carpeta `scripts` contiene algunos scripts que nos ayudarán a realizar el tu
 Antes de continuar con el tutorial, asegúrate de instalar los paquetes necesarios:
 
 ```bash
-conda create -f python_env.yaml -n mlflow
-```
-`requirements.txt` is called from `python_env.yaml`
-
-Or manually:
-```bash
 conda create -n mlflow python=3.9
 conda activate mlflow
 pip install -r requirements.txt
