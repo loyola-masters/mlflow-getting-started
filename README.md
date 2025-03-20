@@ -26,6 +26,9 @@ conda create -n mlflow python=3.9
 conda activate mlflow
 pip install -r requirements.txt
 ```
+Usando conda:
+
+`conda env create -f conda.yml`
 
 ### 1. MLFlow Tracking
 
@@ -53,23 +56,25 @@ python scripts/train.py --epochs 25 --learning_rate 0.01 --batch_size 64
 Dentro de `train.py` encontrarás el siguiente fragmento de código:
 
 ```python
-with mlflow.start_run():
-    mlflow.log_param("learning_rate", learning_rate)
-    mlflow.log_param("batch_size", batch_size)
-    mlflow.log_param("epochs", epochs)
+    with mlflow.start_run(run_name=run_name):
+        mlflow.log_param("device", device)
+        mlflow.log_param("epochs", epochs)
+        mlflow.log_param("learning_rate", learning_rate)
+        mlflow.log_param("batch_size", batch_size)
 
-    for t in range(epochs):
-        print(f"Epoch {t+1}\n-------------------------------")
-        train(train_dataloader, model, loss_fn, optimizer)
-        test_acc, test_loss = test(test_dataloader, model, loss_fn)
+        for t in range(epochs):
+            print(f"Epoch {t+1}\n-------------------------------")
+            train(train_dataloader, model, loss_fn, optimizer)
+            test_acc, test_loss = test(test_dataloader, model, loss_fn)
 
-        mlflow.log_metric("test_acc", test_acc, step=t)
-        mlflow.log_metric("test_loss", test_loss, step=t)
+            mlflow.log_metric("test_acc", test_acc, step=t)
+            mlflow.log_metric("test_loss", test_loss, step=t)
 
-        if test_acc > best_acc:
-            best_acc = test_acc
-            mlflow.log_metric("best_acc", best_acc, step=t)
-            mlflow.pytorch.log_model(model, "model", signature=signature)
+            if test_acc > best_acc:
+                best_acc = test_acc
+                mlflow.log_metric("best_acc", best_acc, step=t)
+                mlflow.pytorch.log_model(model.cpu(), "model", signature=signature, code_paths=["scripts/model.py"])
+                model.to(device)
 ```
 
 En este fragmento de código, puedes observar que los parámetros se registran con el método `log_param`, las métricas con `log_metric` y el modelo se guarda con `log_model`. Además de estos, existen otros métodos útiles, como `log_artifact` para guardar archivos en el directorio `artifacts` y `log_image` para guardar imágenes. Para más información, consulta la [documentación](https://mlflow.org/docs/latest/python_api/mlflow.tracking.html).
@@ -100,13 +105,12 @@ Ahora que tenemos nuestro código de entrenamiento, podemos crear un proyecto en
 Para crear un nuevo proyecto, debemos agregar un archivo llamado `MLproject`, que contendrá las especificaciones del proyecto.
 
 ```python
-name: Tutorial Project
+name: MNIST Tutorial Project
 
-# Si deseas usar conda:
-# conda_env: conda.yaml
+conda_env: conda.yaml
 
-# En este caso, usaremos un entorno de Python
-python_env: python_env.yaml
+# O si usas pyenv
+# python_env: conda.yaml
 
 entry_points:
   main:
@@ -123,16 +127,11 @@ Para más información sobre las especificaciones del archivo `MLproject`, consu
 
 Podemos ejecutar nuestro proyecto en el entorno local o dejar que MLFlow prepare un entorno para nuestro proyecto usando `pyenv`. Si deseas usar `pyenv`, consulta [esta guía](https://dev.to/womakerscode/instalando-o-python-com-o-pyenv-2dc7) para instalarlo.
 
-Para ejecutar el proyecto con `pyenv`, usa:
-
+Para ejecutar el proyecto:
 ```bash
-$ mlflow run git@github.com:esgario/mlflow-tutorial.git -P epochs=5 -P learning_rate=0.01 -P batch_size=64
-```
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 
-O con el entorno local:
-
-```bash
-$  mlflow run git@github.com:esgario/mlflow-tutorial.git --env-manager=local
+mlflow run . --env-manager=local --experiment-name "MNIST_experiment" --run-name "run_$timestamp" -P epochs=5 -P learning_rate=0.01 -P batch_size=64
 ```
 
 > Nota: Los parámetros son opcionales. Para pasarlos, usa el argumento `-P` seguido del nombre del parámetro y el valor deseado.
@@ -386,3 +385,33 @@ Donde `"my_model/latest"` es el nombre del modelo en el **Model Registry**.
 ✔ **Por defecto, MLflow guarda los modelos en `./mlruns/{experiment_id}/{run_id}/artifacts/model/`.**  
 ✔ **Si usas un servidor remoto, el modelo se almacena en la ubicación configurada (`S3, GCS, Azure, MySQL, etc.`).**  
 ✔ **Puedes recuperar la ruta con `mlflow.get_tracking_uri()` y cargar el modelo con `mlflow.pytorch.load_model()`.**
+
+# ANEXO 3: Opciones para ejecutar el Proyecto de MLflow
+Para ejecutar el proyecto con **Conda** en lugar de `pyenv`, usa el siguiente comando:
+
+```bash
+mlflow run git@github.com:loyola-masters/mlflow-getting-started.git --env-manager=conda -P epochs=5 -P learning_rate=0.01 -P batch_size=64
+```
+
+- **`--env-manager=conda`** → Especifica que MLflow debe usar **Conda** 
+- **`-P epochs=5`** → Pasa el argumento `epochs` con el valor `5`.
+- **`-P learning_rate=0.01`** → Pasa el argumento `learning_rate` con el valor `0.01`.
+- **`-P batch_size=64`** → Pasa el argumento `batch_size` con el valor `64`.
+
+### **Alternativa: Ejecutar en un entorno local ya configurado**
+Si ya creaste y activaste el entorno Conda manualmente, puedes ejecutar directamente:
+
+```bash
+conda activate mlflow-project-env  # Activar el entorno Conda
+
+$timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+mlflow run . --env-manager=local --experiment-name "MNIST_experiment" --run-name "run_$timestamp" -P epochs=5 -P learning_rate=0.01 -P batch_size=64
+```
+
+---
+
+### **📌 Resumen**
+| Método | Comando |
+|--------|---------|
+| **Ejecutar con Conda** | `mlflow run <repo> --env-manager=conda -P epochs=5 -P learning_rate=0.01 -P batch_size=64` |
+| **Ejecutar en un entorno local** | `mlflow run . --env-manager=local -P epochs=5 -P learning_rate=0.01 -P batch_size=64` |
