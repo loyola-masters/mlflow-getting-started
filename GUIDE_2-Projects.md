@@ -23,6 +23,8 @@ Podemos ejecutar nuestro proyecto en el entorno local o dejar que MLFlow prepare
 
 ```bash
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$run_name = "run_$timestamp"
+mlflow run . --env-manager=local --experiment-name "MNIST_experiment" --run-name $run_name -P epochs=5 -P learning_rate=0.01 -P batch_size=64
 
 mlflow run . --env-manager=local --experiment-name "MNIST_experiment" -P epochs=5 -P learning_rate=0.01 -P batch_size=64
 ```
