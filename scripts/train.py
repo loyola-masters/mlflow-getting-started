@@ -78,12 +78,15 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
 
     best_acc = 0.0
 
-    # Define experiment name
+    # Define experiment name. Skip here
+    # It is defined in MLflow Project level
+    '''
     experiment_name = "Tracking_MNIST_experiment"
+    mlflow.set_experiment(experiment_name)
+    '''
+    
     # Generate run name with timestamp
     run_name = f"run_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
-    
-    mlflow.set_experiment(experiment_name)
     
     with mlflow.start_run(run_name=run_name):
         mlflow.log_param("device", device)
