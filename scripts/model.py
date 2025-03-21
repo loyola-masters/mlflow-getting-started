@@ -45,6 +45,11 @@ def build_model(input_shape=(28, 28)):
     x = torch.randn(2, *input_shape)
     y = model(x.to(device)).cpu()
     signature = infer_signature(x.numpy(), y.detach().numpy())
+    '''
+    MLflow model signature is a formal description of the model's I/O, helpful for MLflow logging, validation, and deployment.
+    It helps MLflow understand what kind of data your model expects and returns.
+    This is useful for model serving or registering in a model registry.
+    '''
     print(signature)
 
     return model, signature

@@ -10,6 +10,7 @@ from datetime import datetime
 from model import build_model, device
 from dataset import build_dataloaders
 
+# http://localhost:5000 by default
 tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "")
 mlflow.set_tracking_uri(tracking_uri)
 
@@ -44,8 +45,16 @@ def test(dataloader, model, loss_fn):
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(dim=1) == y).type(torch.float).sum().item()
+            '''
+        - pred.argmax(dim=1) gets the index of the class with the highest predicted probability (i.e., the predicted label).
+        - Compares predictions to ground truth (== y) → gives a tensor of True/False.
+        - Converts to float (True → 1.0, False → 0.0), then sums to count correct predictions.
+        - Adds this to the correct counter.
+            '''
 
+    # Averages the total loss over the number of batches
     test_loss /= len(dataloader)
+    # Converts the count of correct predictions into a proportion (i.e., accuracy as a float between 0 and 1)
     correct /= len(dataloader.dataset)
     test_acc = correct * 100.0
     print(f"Test Error: \n Accuracy: {(test_acc):>0.1f}%, Avg loss: {test_loss:>8f} \n")
@@ -54,6 +63,9 @@ def test(dataloader, model, loss_fn):
 
 
 def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
+    # Default values are superseded by the values passed as arguments
+    # Arguments' default values are used if no values are passed, and they have more priority than the function dfeault values
+    
     print(f"Entrenando con {epochs} epochs, LR={learning_rate}, Batch size={batch_size}")
     train_dataloader, test_dataloader = build_dataloaders(batch_size)
     model, signature = build_model()
@@ -66,12 +78,12 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
 
     best_acc = 0.0
 
-    # Generate experiment run with timestamp
-    experiment_name = "MNIST_experiment"
-    mlflow.set_experiment(experiment_name)
-    
+    # Define experiment name
+    experiment_name = "Tracking_MNIST_experiment"
     # Generate run name with timestamp
     run_name = f"run_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+    
+    mlflow.set_experiment(experiment_name)
     
     with mlflow.start_run(run_name=run_name):
         mlflow.log_param("device", device)

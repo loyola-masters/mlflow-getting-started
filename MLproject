@@ -1,10 +1,5 @@
 name: MNIST Tutorial Project
 
-conda_env: conda.yaml
-
-# En el caso de python env
-# python_env: python_env.yaml
-
 entry_points:
   main:
     parameters:
