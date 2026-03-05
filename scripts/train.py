@@ -10,11 +10,12 @@ from datetime import datetime
 from model import build_model, device
 from dataset import build_dataloaders
 
+# http://localhost:5000 by default
 tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", "")
 mlflow.set_tracking_uri(tracking_uri)
 
 
-def train(dataloader, model, loss_fn, optimizer):
+def train(dataloader, model, loss_fn, optimizer, epoch):
     size = len(dataloader.dataset)
     model.train()
     for batch, (X, y) in enumerate(dataloader):
@@ -29,6 +30,9 @@ def train(dataloader, model, loss_fn, optimizer):
         loss.backward()
         optimizer.step()
 
+        # Log training loss per batch
+        mlflow.log_metric("train_loss", loss.item(), step=epoch * len(dataloader) + batch)
+        
         # Print progress
         if batch % 100 == 0:
             loss, current = loss.item(), batch * len(X)
@@ -44,8 +48,16 @@ def test(dataloader, model, loss_fn):
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(dim=1) == y).type(torch.float).sum().item()
+            '''
+        - pred.argmax(dim=1) gets the index of the class with the highest predicted probability (i.e., the predicted label).
+        - Compares predictions to ground truth (== y) → gives a tensor of True/False.
+        - Converts to float (True → 1.0, False → 0.0), then sums to count correct predictions.
+        - Adds this to the correct counter.
+            '''
 
+    # Averages the total loss over the number of batches
     test_loss /= len(dataloader)
+    # Converts the count of correct predictions into a proportion (i.e., accuracy as a float between 0 and 1)
     correct /= len(dataloader.dataset)
     test_acc = correct * 100.0
     print(f"Test Error: \n Accuracy: {(test_acc):>0.1f}%, Avg loss: {test_loss:>8f} \n")
@@ -54,7 +66,11 @@ def test(dataloader, model, loss_fn):
 
 
 def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
+    # Default values are superseded by the values passed as arguments
+    # Arguments' default values are used if no values are passed, and they have more priority than the function dfeault values
+    
     print(f"Entrenando con {epochs} epochs, LR={learning_rate}, Batch size={batch_size}")
+    print(f"Device: {device} (GPU available: {torch.cuda.is_available()})")
     train_dataloader, test_dataloader = build_dataloaders(batch_size)
     model, signature = build_model()
     
@@ -66,9 +82,12 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
 
     best_acc = 0.0
 
-    # Generate experiment run with timestamp
-    experiment_name = "MNIST_experiment"
+    # Define experiment name. Skip here
+    # It is defined at MLflow Project level
+    '''
+    experiment_name = "Tracking_MNIST_experiment"
     mlflow.set_experiment(experiment_name)
+    '''
     
     # Generate run name with timestamp
     run_name = f"run_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
@@ -81,7 +100,7 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
 
         for t in range(epochs):
             print(f"Epoch {t+1}\n-------------------------------")
-            train(train_dataloader, model, loss_fn, optimizer)
+            train(train_dataloader, model, loss_fn, optimizer, t)
             test_acc, test_loss = test(test_dataloader, model, loss_fn)
 
             mlflow.log_metric("test_acc", test_acc, step=t)
