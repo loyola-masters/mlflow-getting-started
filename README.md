@@ -68,7 +68,9 @@ Dentro de `train.py` encontrarás el siguiente fragmento de código:
                 model.to(device)
 ```
 
-En este fragmento de código, puedes observar que los parámetros se registran con el método `log_param`, las métricas con `log_metric` y el modelo se guarda con `log_model`. Además de estos, existen otros métodos útiles, como `log_artifact` para guardar archivos en el directorio `artifacts` y `log_image` para guardar imágenes. Para más información, consulta la [documentación](https://mlflow.org/docs/latest/python_api/mlflow.tracking.html).
+En este fragmento, puedes observar que los parámetros se registran con el método `log_param`, las métricas con `log_metric` y el modelo se guarda con `log_model`. Además de estos, existen otros métodos útiles, como `log_artifact` para guardar archivos en el directorio `artifacts` y `log_image` para guardar imágenes.
+
+Para más información, consulta la [documentación](https://mlflow.org/docs/latest/python_api/mlflow.tracking.html).
 
 #### 1.2. Visualizando los resultados
 
@@ -85,6 +87,8 @@ Verás una tabla con los resultados del experimento similar a esta:
 
 Al seleccionar el experimento deseado, tendrás acceso a los gráficos y artefactos generados durante el entrenamiento del modelo.
 
+---
+
 ### 2. MLFlow Projects
 
 Ahora que tenemos nuestro código de entrenamiento, podemos crear un proyecto en un formato que sea reproducible en cualquier plataforma usando MLFlow Projects. Este tipo de proyecto es útil si deseas entrenar un modelo en la nube, por ejemplo, en Databricks.
@@ -98,9 +102,6 @@ name: MNIST Tutorial Project
 
 conda_env: conda.yaml
 
-# O si usas pyenv
-# python_env: conda.yaml
-
 entry_points:
   main:
     parameters:
@@ -110,14 +111,22 @@ entry_points:
     command: "python scripts/train.py {epochs} {learning_rate} {batch_size}"
 ```
 
+Respecto al entorno de ejecución, al lanzar `mlflow run . --env-manager=conda`, MLFlow encuentra en el fichero del proyecto `MLProject` la especificación `conda_env: conda.yaml`. En consecuencia:
+- Crea un nuevo entorno basado en las dependencias especificadas
+- Ejecuta el proyecto en él
+- Elimina el entorno después (por defecto)
+
+Para usar un entorno ya existente, con `--env-manager=local`, el proyecto se ejecuta en el entorno activado en tu sesión actual.
+
 Para más información sobre las especificaciones del archivo `MLproject`, consulta [aquí](https://mlflow.org/docs/latest/projects.html).
+
 
 #### 2.2. Ejecutando nuestro proyecto
 
-Podemos ejecutar nuestro proyecto en el entorno local o dejar que MLFlow prepare un entorno para nuestro proyecto usando `pyenv`. Si deseas usar `pyenv`, consulta [esta guía](https://dev.to/womakerscode/instalando-o-python-com-o-pyenv-2dc7) para instalarlo.
+Podemos ejecutar nuestro proyecto en el entorno local o dejar que MLFlow prepare un entorno para nuestro proyecto usando `conda`. Si deseas usar `pyenv`, consulta [esta guía](https://dev.to/womakerscode/instalando-o-python-com-o-pyenv-2dc7) para instalarlo.
 
 Para ejecutar el proyecto:
-```bash
+```powershell
 $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 
 mlflow run . --env-manager=local --experiment-name "MNIST_experiment" --run-name "run_$timestamp" -P epochs=5 -P learning_rate=0.01 -P batch_size=64
@@ -127,14 +136,6 @@ mlflow run . --env-manager=local --experiment-name "MNIST_experiment" --run-name
 
 # ANEXO 1: Instalación manual de Pytorch con soporte para GPU
 
-Fichero `requirements.txt`:
-```
-pip==22.1.2
-setuptools==62.6.0
-wheel==0.37.1
-mlflow[extras]
-cloudpickle==2.1.0
-```
 Instala Pytorch con soporte para CUDA manualmente:
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124

@@ -10,7 +10,7 @@ La carpeta `scripts` contiene los siguientes scripts:
 ## 1.1 Setup del entorno
 
 ```bash
-conda create -n mlflow python=3.9
+conda create -n mlflow python=3.11
 conda activate mlflow
 pip install -r requirements.txt
 ```
@@ -156,14 +156,16 @@ Then, the model is sent back to GPU (if needed) using `model.to(device)`.
 
 ## ANNEX B: Save and Load a Pytorch Model
 Although MLflow stores the model, it will be useful to get it in the Pytorch format for using it outside MLflow.
+
+- After training, saves the model weights to a local file using PyTorch:
 ```python
     model_path = "model.pth"
     torch.save(model.state_dict(), model_path)
     print(f"Modelo guardado en {model_path}")
 ```
-- After training, saves the model weights to a local file using PyTorch. Use this if you wnat to save the full model.
+
+- If you want to save the full model:
 > `torch.save(model, "full_model.pth")`
-- This is useful in case you want to load and use the model outside of MLflow.
 
 To load the model in another environment (only weights):
 ```python

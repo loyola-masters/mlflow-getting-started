@@ -70,6 +70,7 @@ def run_training(epochs=3, learning_rate=1e-2, batch_size=64):
     # Arguments' default values are used if no values are passed, and they have more priority than the function dfeault values
     
     print(f"Entrenando con {epochs} epochs, LR={learning_rate}, Batch size={batch_size}")
+    print(f"Device: {device} (GPU available: {torch.cuda.is_available()})")
     train_dataloader, test_dataloader = build_dataloaders(batch_size)
     model, signature = build_model()
     
